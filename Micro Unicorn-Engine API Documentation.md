@@ -22,23 +22,25 @@ Unicorn官网:     http://www.unicorn-engine.org
 
 文件结构如下：
 
-> . <- 主要引擎core engine + README + 编译文档COMPILE.TXT 等
-> ├── arch <- 各语言反编译支持的代码实现
-> ├── bindings <- 中间件
-> │ ├── dotnet <- .Net 中间件 + 测试代码
-> │ ├── go <- go 中间件 + 测试代码
-> │ ├── haskell <- Haskell 中间件 + 测试代码
-> │ ├── java <- Java 中间件 + 测试代码
-> │ ├── pascal <- Pascal 中间件 + 测试代码
-> │ ├── python <- Python 中间件 + 测试代码
-> │ ├── ruby <- Ruby 中间件 + 测试代码
-> │ └── vb6 <- VB6 中间件 + 测试代码
-> ├── docs <- 文档，主要是Unicorn的实现思路
-> ├── include <- C头文件
-> ├── msvc <- Microsoft Visual Studio 支持（Windows）
-> ├── qemu <- qemu框架源码
-> ├── samples <- Unicorn使用示例
-> └── tests <- C语言测试用例
+```
+ . <- 主要引擎core engine + README + 编译文档COMPILE.TXT 等
+ ├── arch <- 各语言反编译支持的代码实现
+ ├── bindings <- 中间件
+ │ ├── dotnet <- .Net 中间件 + 测试代码
+ │ ├── go <- go 中间件 + 测试代码
+ │ ├── haskell <- Haskell 中间件 + 测试代码
+ │ ├── java <- Java 中间件 + 测试代码
+ │ ├── pascal <- Pascal 中间件 + 测试代码
+ │ ├── python <- Python 中间件 + 测试代码
+ │ ├── ruby <- Ruby 中间件 + 测试代码
+ │ └── vb6 <- VB6 中间件 + 测试代码
+ ├── docs <- 文档，主要是Unicorn的实现思路
+ ├── include <- C头文件
+ ├── msvc <- Microsoft Visual Studio 支持（Windows）
+ ├── qemu <- qemu框架源码
+ ├── samples <- Unicorn使用示例
+ └── tests <- C语言测试用例
+```
 
 下面演示Windows10使用Visual Studio2019编译
 
