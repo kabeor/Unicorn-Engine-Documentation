@@ -2,7 +2,7 @@
 
 **Warning:** ***This is an unofficial API document by [kabeor](https://github.com/kabeor), If there are any mistakes, welcome to ask.***
 
-**注意：** ***这是由kabeor制作的非官方API参考文档，如有错误欢迎提出***
+**注意：** ***这是由kabeor制作的非官方API参考文档，如有错误欢迎提出，觉得不错可以给个star鼓励我***
 
 之前对Capstone反汇编引擎的API分析文档已经被[官方](http://www.capstone-engine.org/documentation.html)收录 https://github.com/kabeor/Micro-Capstone-Engine-API-Documentation  ，在实现自己想要做出的调试器的路上，又遇到了与Capstone同作者的国外大佬aquynh的另一个著名项目Unicorn，不巧的是，详尽的API文档仍然较少，更多的是大篇幅的代码，因此决定继续分析Unicorn框架，包括数据类型，已开放API及其实现。
 
