@@ -7,7 +7,7 @@
 
 [PDF File](https://github.com/kabeor/Micro-Unicorn-Engine-API-Documentation) 
 
-[Unicorn](http://www.unicorn-engine.org/)是一个轻量级, 多平台, 多架构的CPU模拟器框架，当前版本基于[Qemu](https://www.qemu.org/) 2.0.x开发，它可以代替CPU模拟代码的执行，常用于恶意代码分析，Fuzzing等，该项目被用于[Qiling虚拟框架](https://github.com/qilingframework/qiling)，[Radare2逆向分析框架](https://github.com/qilingframework/qiling)，[GEF(gdb的pwn分析插件)](https://github.com/hugsy/gef)，[Pwndbg](https://github.com/pwndbg/pwndbg)，[Angr符号执行框架](https://github.com/angr/angr)等多个著名项目。
+[Unicorn Engine](http://www.unicorn-engine.org/)是一个轻量级, 多平台, 多架构的CPU模拟器框架，当前版本基于[Qemu](https://www.qemu.org/) 2.0.x开发，它可以代替CPU模拟代码的执行，常用于恶意代码分析，Fuzzing等，该项目被用于[Qiling虚拟框架](https://github.com/qilingframework/qiling)，[Radare2逆向分析框架](https://github.com/qilingframework/qiling)，[GEF(gdb的pwn分析插件)](https://github.com/hugsy/gef)，[Pwndbg](https://github.com/pwndbg/pwndbg)，[Angr符号执行框架](https://github.com/angr/angr)等多个著名项目。
 
 ## 0x0 开发准备
 
@@ -23,20 +23,21 @@ Unicorn官网:     http://www.unicorn-engine.org
 
 ```
 . <- 主要引擎core engine + README + 编译文档COMPILE.TXT 等
-├── arch <- 各语言反编译支持的代码实现
 ├── bindings <- 绑定
-│ ├── dotnet <- .Net 中间件 + 测试代码
-│ ├── go <- go 中间件 + 测试代码
-│ ├── haskell <- Haskell 中间件 + 测试代码
-│ ├── java <- Java 中间件 + 测试代码
-│ ├── pascal <- Pascal 中间件 + 测试代码
-│ ├── python <- Python 中间件 + 测试代码
-│ ├── ruby <- Ruby 中间件 + 测试代码
-│ └── vb6 <- VB6 中间件 + 测试代码
+│ ├── dotnet <- .Net 绑定 + 测试代码
+│ ├── go <- go 绑定 + 测试代码
+│ ├── haskell <- Haskell 绑定 + 测试代码
+│ ├── java <- Java 绑定 + 测试代码
+│ ├── pascal <- Pascal 绑定 + 测试代码
+│ ├── python <- Python 绑定 + 测试代码
+│ ├── ruby <- Ruby 绑定 + 测试代码
+│ ├── rust <- Rust 绑定 + 测试代码
+│ └── vb6 <- VB6 绑定 + 测试代码
 ├── docs <- 文档，主要是Unicorn的实现思路
 ├── include <- C头文件
 ├── msvc <- Microsoft Visual Studio 支持（Windows）
-├── qemu <- qemu框架源码
+├── out <- Build 输出
+├── qemu <- qemu(已修改)源码
 ├── samples <- Unicorn使用示例
 └── tests <- C语言测试用例
 ```
@@ -51,24 +52,15 @@ VS打开unicorn.sln项目文件，解决方案自动载入这些
 
 ![image.png](API_Doc_Pic/1_2.png)
 
-如果都需要的话，直接编译就好了，只需要其中几种，则右键解决方案->属性->配置属性 如下
+如果都需要的话，直接编译就好了，只需要其中几种，则右键解决方案->属性->配置属性->生成选项 中勾选你需要的支持项即可
+
+也可在启动项目中配置多个项目操作 如下
 
 ![image.png](API_Doc_Pic/1_3.png)
 
-生成选项中勾选你需要的支持项即可
 
-项目编译属性为：
-1. 使用多字节字符集
-2. 不使用预编译头
-3. 附加选项 /wd4018 /wd4244 /wd4267
-4. 预处理器定义中添加   ` _CRT_SECURE_NO_WARNINGS`
 
 编译后会在当前文件夹Debug目录下生成unicorn.lib静态编译库和unicorn.dll动态库这样就可以开始使用Unicorn进行开发了
-
-编译到最后一项可能会报错系统找不到指定的路径，查看makefile发现问题出现在此处
-![image.png](API_Doc_Pic/1_4.png)
-
-事实上只不过是不能将生成的lib和dll复制到新建的文件夹而已，只需要到生成目录去找即可。
 
 官方目前提供的最新已编译版本为1.0.3版本，可自己编辑最新版本源码，以获得更多可用API。
 
@@ -77,6 +69,8 @@ VS打开unicorn.sln项目文件，解决方案自动载入这些
 > Win64：https://github.com/unicorn-engine/unicorn/releases/download/1.0.1/unicorn-1.0.3-win64.zip
 
 **注意： 选x32或x64将影响后面开发的架构**
+
+点击编译，到unicorn\msvc\x32或x64\Debug或Release下找unicorn.dll和unicorn.lib即可
 
 
 
@@ -2907,3 +2901,5 @@ uc_err uc_context_free(uc_context *context);
 
 @return 成功则返回UC_ERR_OK , 否则返回 uc_err 枚举的其他错误类型
 ```
+
+使用示例同 [uc_context_alloc()](#uc_context_alloc)
