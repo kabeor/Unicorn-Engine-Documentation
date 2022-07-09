@@ -1,19 +1,56 @@
 # Unicorn-Engine API Documentation
 
-| Version | 1.0.3 |
+| Version | 2.0.0 |
 | ------- | ----- |
 
 **Official API document by [kabeor](https://github.com/kabeor)**
 
 [PDF File](https://github.com/kabeor/Micro-Unicorn-Engine-API-Documentation) 
 
-[Unicorn Engine](http://www.unicorn-engine.org/)是一个轻量级, 多平台, 多架构的CPU模拟器框架，当前版本基于[Qemu](https://www.qemu.org/) 2.0.x开发，它可以代替CPU模拟代码的执行，常用于恶意代码分析，Fuzzing等，该项目被用于[Qiling虚拟框架](https://github.com/qilingframework/qiling)，[Radare2逆向分析框架](https://github.com/qilingframework/qiling)，[GEF(gdb的pwn分析插件)](https://github.com/hugsy/gef)，[Pwndbg](https://github.com/pwndbg/pwndbg)，[Angr符号执行框架](https://github.com/angr/angr)等多个著名项目。
+[Unicorn Engine](http://www.unicorn-engine.org/)是一个轻量级, 多平台, 多架构的CPU模拟器框架，当前版本基于[Qemu](https://www.qemu.org/) 5.0.1开发，它可以代替CPU模拟代码的执行，常用于程序虚拟、恶意代码分析、Fuzzing等，本项目被用于[Qiling虚拟框架](https://github.com/qilingframework/qiling)，[Radare2逆向分析框架](https://github.com/qilingframework/qiling)，[GEF(gdb的pwn分析插件)](https://github.com/hugsy/gef)，[Pwndbg](https://github.com/pwndbg/pwndbg)，[Angr符号执行框架](https://github.com/angr/angr)等多个著名项目。
 
 ## 0x0 开发准备
 
 Unicorn官网:     http://www.unicorn-engine.org
 
-### 自行编译lib和dll
+```bash
+git clone https://github.com/unicorn-engine/unicorn.git
+```
+
+### 编译
+
+<details><summary>Linux & MacOS</summary>
+
+Ubuntu
+```bash
+sudo apt install cmake pkg-config
+```
+
+MacOS
+```bash
+brew install cmake pkg-config
+```
+
+使用以下命令编译
+```bash
+mkdir build; cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release
+make
+```
+</details>
+
+<details><summary>Windows</summary>
+
+Microsoft MSVC编译器编译
+```bash
+//安装cmake 及 Microsoft Visual Studio (>=16.8)
+//在Visual Studio Command Prompt使用以下命令编译
+mkdir build; cd build
+cmake .. -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Release
+nmake
+```
+
+<details><summary>VS GUI内编译lib和dll(旧)</summary>
 
 源码： https://github.com/unicorn-engine/unicorn/archive/master.zip
 
@@ -33,10 +70,10 @@ Unicorn官网:     http://www.unicorn-engine.org
 │ ├── ruby <- Ruby 绑定 + 测试代码
 │ ├── rust <- Rust 绑定 + 测试代码
 │ └── vb6 <- VB6 绑定 + 测试代码
-├── docs <- 文档，主要是Unicorn的实现思路
+├── docs <- 文档
+├── glib_compat <- 基于glib 2.64.4修改的兼容库
 ├── include <- C头文件
 ├── msvc <- Microsoft Visual Studio 支持（Windows）
-├── out <- Build 输出
 ├── qemu <- qemu(已修改)源码
 ├── samples <- Unicorn使用示例
 └── tests <- C语言测试用例
@@ -64,18 +101,35 @@ VS打开unicorn.sln项目文件，解决方案自动载入这些
 
 官方目前提供的最新已编译版本为1.0.3版本，可自己编辑最新版本源码，以获得更多可用API。
 
-> Win32：https://github.com/unicorn-engine/unicorn/releases/download/1.0.1/unicorn-1.0.3-win32.zip
+> Win32：https://github.com/unicorn-engine/unicorn/releases/download/2.0.0/unicorn-2.0.0-win32.zip
 
-> Win64：https://github.com/unicorn-engine/unicorn/releases/download/1.0.1/unicorn-1.0.3-win64.zip
+> Win64：https://github.com/unicorn-engine/unicorn/releases/download/2.0.0/unicorn-2.0.0-win64.zip
 
 **注意： 选x32或x64将影响后面开发的架构**
 
 点击编译，到unicorn\msvc\x32或x64\Debug或Release下找unicorn.dll和unicorn.lib即可
 
+</details>
+</details>
 
+> 其他编译方式点击[这里](https://github.com/unicorn-engine/unicorn/blob/master/docs/COMPILE.md)
+
+### 安装
+- Python模块
+``` bash
+pip install unicorn
+
+//如已安装1.x版本可直接通过以下命令升级
+pip install unicorn --upgrade
+```
+
+- MacOS HomeBrew包
+```bash
+brew install unicorn
+```
 
 ### 引擎调用测试
-
+（以Windows VS2019为例）
 新建一个VS项目，将..\unicorn-master\include\unicorn中的头文件以及编译好的lib和dll文件全部拷贝到新建项目的主目录下
 
 ![image.png](API_Doc_Pic/1_5.png)
@@ -182,6 +236,8 @@ ecx+1和edx-1成功模拟。
 
 [uc_query_type](#uc_query_type)
 
+[uc_control_type](#uc_control_type)
+
 [uc_context](#uc_context)
 
 [uc_prot](#uc_prot)
@@ -200,9 +256,12 @@ typedef enum uc_arch {
     UC_ARCH_ARM64,      // ARM-64, 也称 AArch64
     UC_ARCH_MIPS,       // Mips 架构
     UC_ARCH_X86,        // X86 架构 (包括 x86 & x86-64)
-    UC_ARCH_PPC,        // PowerPC 架构 (暂不支持)
+    UC_ARCH_PPC,        // PowerPC 架构
     UC_ARCH_SPARC,      // Sparc 架构
     UC_ARCH_M68K,       // M68K 架构
+    UC_ARCH_RISCV,      // RISCV 架构
+    UC_ARCH_S390X,      // S390X 架构
+    UC_ARCH_TRICORE,    // TriCore 架构
     UC_ARCH_MAX,
 } uc_arch;
 ```
@@ -223,10 +282,14 @@ typedef enum uc_mode {
     // arm / arm64
     UC_MODE_ARM = 0,              // ARM 模式
     UC_MODE_THUMB = 1 << 4,       // THUMB 模式 (包括 Thumb-2)
-    UC_MODE_MCLASS = 1 << 5,      // ARM's Cortex-M 系列 (暂不支持)
-    UC_MODE_V8 = 1 << 6,          // ARMv8 A32 encodings for ARM (暂不支持)
+    
+    //已弃用，转为使用UC_ARM_CPU_* 和 uc_ctl
+    UC_MODE_MCLASS = 1 << 5,      // ARM's Cortex-M 系列 
+    UC_MODE_V8 = 1 << 6,          // ARMv8 A32 encodings for ARM 
+    UC_MODE_ARMBE8 = 1 << 10, // 大端序数据和小端序代码 仅为兼容UC1版本
 
     // arm (32bit) cpu 类型
+    //已弃用，转为使用UC_ARM_CPU_* 和 uc_ctl
     UC_MODE_ARM926 = 1 << 7,	  // ARM926 CPU 类型
     UC_MODE_ARM946 = 1 << 8,	  // ARM946 CPU 类型
     UC_MODE_ARM1176 = 1 << 9,	  // ARM1176 CPU 类型
@@ -244,7 +307,7 @@ typedef enum uc_mode {
     UC_MODE_64 = 1 << 3,          // 64-bit 模式
 
     // ppc
-    UC_MODE_PPC32 = 1 << 2,       // 32-bit 模式 (暂不支持)
+    UC_MODE_PPC32 = 1 << 2,       // 32-bit 模式
     UC_MODE_PPC64 = 1 << 3,       // 64-bit 模式 (暂不支持)
     UC_MODE_QPX = 1 << 4,         // Quad Processing eXtensions 模式 (暂不支持)
 
@@ -252,6 +315,10 @@ typedef enum uc_mode {
     UC_MODE_SPARC32 = 1 << 2,     // 32-bit 模式
     UC_MODE_SPARC64 = 1 << 3,     // 64-bit 模式
     UC_MODE_V9 = 1 << 4,          // SparcV9 模式 (暂不支持)
+
+    // riscv
+    UC_MODE_RISCV32 = 1 << 2,     // 32-bit 模式
+    UC_MODE_RISCV64 = 1 << 3,     // 64-bit 模式
 
     // m68k
 } uc_mode;
@@ -268,29 +335,28 @@ typedef enum uc_mode {
 
 ```cpp
 typedef enum uc_err {
-    UC_ERR_OK = 0,   // 无错误
-    UC_ERR_NOMEM,      // 内存不足: uc_open(), uc_emulate()
-    UC_ERR_ARCH,     // 不支持的架构: uc_open()
-    UC_ERR_HANDLE,   // 不可用句柄
-    UC_ERR_MODE,     // 不可用/不支持架构: uc_open()
-    UC_ERR_VERSION,  // 不支持版本 (中间件)
-    UC_ERR_READ_UNMAPPED, // 由于在未映射的内存上读取而退出模拟: uc_emu_start()
-    UC_ERR_WRITE_UNMAPPED, // 由于在未映射的内存上写入而退出模拟: uc_emu_start()
-    UC_ERR_FETCH_UNMAPPED, // 由于在未映射的内存中获取数据而退出模拟: uc_emu_start()
-    UC_ERR_HOOK,    // 无效的hook类型: uc_hook_add()
-    UC_ERR_INSN_INVALID, // 由于指令无效而退出模拟: uc_emu_start()
-    UC_ERR_MAP, // 无效的内存映射: uc_mem_map()
-    UC_ERR_WRITE_PROT, // 由于UC_MEM_WRITE_PROT冲突而停止模拟: uc_emu_start()
-    UC_ERR_READ_PROT, // 由于UC_MEM_READ_PROT冲突而停止模拟: uc_emu_start()
-    UC_ERR_FETCH_PROT, // 由于UC_MEM_FETCH_PROT冲突而停止模拟: uc_emu_start()
-    UC_ERR_ARG,     // 提供给uc_xxx函数的无效参数
-    UC_ERR_READ_UNALIGNED,  // 未对齐读取
+    UC_ERR_OK = 0,           // 无错误
+    UC_ERR_NOMEM,            // 内存不足: uc_open(), uc_emulate()
+    UC_ERR_ARCH,             // 不支持的架构: uc_open()
+    UC_ERR_HANDLE,           // 不可用句柄
+    UC_ERR_MODE,             // 不可用/不支持架构: uc_open()
+    UC_ERR_VERSION,          // 不支持版本 (或语言绑定)
+    UC_ERR_READ_UNMAPPED,    // 由于在未映射的内存上读取而退出模拟: uc_emu_start()
+    UC_ERR_WRITE_UNMAPPED,   // 由于在未映射的内存上写入而退出模拟: uc_emu_start()
+    UC_ERR_FETCH_UNMAPPED,   // 由于在未映射的内存中获取数据而退出模拟: uc_emu_start()
+    UC_ERR_HOOK,             // 无效的hook类型: uc_hook_add()
+    UC_ERR_INSN_INVALID,     // 由于指令无效而退出模拟: uc_emu_start()
+    UC_ERR_MAP,              // 无效的内存映射: uc_mem_map()
+    UC_ERR_WRITE_PROT,       // 由于UC_MEM_WRITE_PROT冲突而停止模拟: uc_emu_start()
+    UC_ERR_READ_PROT,        // 由于UC_MEM_READ_PROT冲突而停止模拟: uc_emu_start()
+    UC_ERR_FETCH_PROT,       // 由于UC_MEM_FETCH_PROT冲突而停止模拟: uc_emu_start()
+    UC_ERR_ARG,              // 提供给uc_xxx函数的无效参数
+    UC_ERR_READ_UNALIGNED,   // 未对齐读取
     UC_ERR_WRITE_UNALIGNED,  // 未对齐写入
     UC_ERR_FETCH_UNALIGNED,  // 未对齐的提取
-    UC_ERR_HOOK_EXIST,  // 此事件的钩子已经存在
-    UC_ERR_RESOURCE,    // 资源不足: uc_emu_start()
-    UC_ERR_EXCEPTION, // 未处理的CPU异常
-    UC_ERR_TIMEOUT // 模拟超时
+    UC_ERR_HOOK_EXIST,       // 此事件的钩子已经存在
+    UC_ERR_RESOURCE,         // 资源不足: uc_emu_start()
+    UC_ERR_EXCEPTION,        // 未处理的CPU异常
 } uc_err;
 ```
 
@@ -305,16 +371,16 @@ UC_HOOK_MEM_*的所有内存访问类型
 
 ```cpp
 typedef enum uc_mem_type {
-    UC_MEM_READ = 16,   // 内存从..读取
-    UC_MEM_WRITE,       // 内存写入到..
-    UC_MEM_FETCH,       // 内存被获取
+    UC_MEM_READ = 16,        // 内存从..读取
+    UC_MEM_WRITE,            // 内存写入到..
+    UC_MEM_FETCH,            // 内存被获取
     UC_MEM_READ_UNMAPPED,    // 未映射内存从..读取
     UC_MEM_WRITE_UNMAPPED,   // 未映射内存写入到..
     UC_MEM_FETCH_UNMAPPED,   // 未映射内存被获取
-    UC_MEM_WRITE_PROT,  // 内存写保护，但是已映射
-    UC_MEM_READ_PROT,   // 内存读保护，但是已映射
-    UC_MEM_FETCH_PROT,  // 内存不可执行，但是已映射
-    UC_MEM_READ_AFTER,   // 内存从 (成功访问的地址) 读入
+    UC_MEM_WRITE_PROT,       // 内存写保护，但是已映射
+    UC_MEM_READ_PROT,        // 内存读保护，但是已映射
+    UC_MEM_FETCH_PROT,       // 内存不可执行，但是已映射
+    UC_MEM_READ_AFTER,       // 内存从 (成功访问的地址) 读入
 } uc_mem_type;
 ```
 
@@ -360,6 +426,13 @@ typedef enum uc_hook_type {
     UC_HOOK_MEM_READ_AFTER = 1 << 13,
     // Hook 无效指令异常
     UC_HOOK_INSN_INVALID = 1 << 14,
+    // Hook 新的(执行流的)边生成事件. 在程序分析中可能有用.
+    // 注意: 该Hook有两个方面不同于 UC_HOOK_BLOCK:
+    //       1. 该Hook在指令执行前被调用.
+    //       2. 该Hook仅在生成事件触发时被调用.
+    UC_HOOK_EDGE_GENERATED = 1 << 15,
+    // Hook 特定的 tcg 操作码. 用法与UC_HOOK_INSN相似.
+    UC_HOOK_TCG_OPCODE = 1 << 16,
 } uc_hook_type;
 ```
 
@@ -422,9 +495,100 @@ typedef struct uc_mem_region {
 typedef enum uc_query_type {
     // 动态查询当前硬件模式
     UC_QUERY_MODE = 1,
-    UC_QUERY_PAGE_SIZE,
-    UC_QUERY_ARCH,
+    UC_QUERY_PAGE_SIZE, // 查询引擎实例的pagesize
+    UC_QUERY_ARCH,      // 查询引擎实例的架构类型
+    UC_QUERY_TIMEOUT,   // 查询是否由于超时停止模拟 (如果 result = True 则表示是)
 } uc_query_type;
+```
+
+</details>
+
+
+### uc_control_type
+
+[uc_ctl()](#uc_ctl)的所有查询类型参数
+
+<details><summary> Code </summary>
+
+```cpp
+// uc_ctl 的实现与 Linux ioctl 较为类似但略有不同
+//
+// uc_control_type 在 uc_ctl 中的组织结构如下:
+//
+//    R/W       NR       Reserved     Type
+//  [      ] [      ]  [         ] [       ]
+//  31    30 29     26 25       16 15      0
+//
+//  @R/W: 是否操作是一个读/写访问.
+//  @NR: 参数数量.
+//  @Reserved: 为0，为未来扩展保留.
+//  @Type: uc_control_type 中的枚举.
+
+// 无输入和输出参数.
+#define UC_CTL_IO_NONE (0)
+// 仅有输入参数为了一个写操作.
+#define UC_CTL_IO_WRITE (1)
+// 仅有输出参数为了一个读操作.
+#define UC_CTL_IO_READ (2)
+// 参数中同时包含读和写操作.
+#define UC_CTL_IO_READ_WRITE (UC_CTL_IO_WRITE | UC_CTL_IO_READ)
+
+#define UC_CTL(type, nr, rw)                                                   \
+    (uc_control_type)((type) | ((nr) << 26) | ((rw) << 30))
+#define UC_CTL_NONE(type, nr) UC_CTL(type, nr, UC_CTL_IO_NONE)
+#define UC_CTL_READ(type, nr) UC_CTL(type, nr, UC_CTL_IO_READ)
+#define UC_CTL_WRITE(type, nr) UC_CTL(type, nr, UC_CTL_IO_WRITE)
+#define UC_CTL_READ_WRITE(type, nr) UC_CTL(type, nr, UC_CTL_IO_READ_WRITE)
+```
+
+```cpp
+// 控制链以树状结构组织.
+// 如果一个控制状态没有为@args填入 `Set` 或 `Get`, 则是 r/o 或 w/o.
+typedef enum uc_control_type {
+    // 当前模式.
+    // Read: @args = (int*)
+    UC_CTL_UC_MODE = 0,
+    // 当前 page size.
+    // Write: @args = (uint32_t)
+    // Read: @args = (uint32_t*)
+    UC_CTL_UC_PAGE_SIZE,
+    // 当前架构.
+    // Read: @args = (int*)
+    UC_CTL_UC_ARCH,
+    // 当前超时.
+    // Read: @args = (uint64_t*)
+    UC_CTL_UC_TIMEOUT,
+    // 允许存在多个退出点.
+    // 没有该控制状态, 读取/设置退出点将不能使用.
+    // Write: @args = (int)
+    UC_CTL_UC_USE_EXITS,
+    // 当前输入数.
+    // Read: @args = (size_t*)
+    UC_CTL_UC_EXITS_CNT,
+    // 当前输入.
+    // Write: @args = (uint64_t* exits, size_t len)
+    //        @len = UC_CTL_UC_EXITS_CNT
+    // Read: @args = (uint64_t* exits, size_t len)
+    //       @len = UC_CTL_UC_EXITS_CNT
+    UC_CTL_UC_EXITS,
+
+    // 设置uc实例的cpu模式.
+    // Note this option can only be set before any Unicorn
+    // API is called except for uc_open.
+    // Write: @args = (int)
+    // Read:  @args = (int*)
+    UC_CTL_CPU_MODEL,
+    // 查询特定地址的 tb(翻译块) 缓存
+    // Read: @args = (uint64_t, uc_tb*)
+    UC_CTL_TB_REQUEST_CACHE,
+    // 禁用特定地址的 tb(翻译块) 缓存
+    // Write: @args = (uint64_t, uint64_t)
+    UC_CTL_TB_REMOVE_CACHE,
+    // 禁用所有的 tb(翻译块)
+    // 无参数
+    UC_CTL_TB_FLUSH
+
+} uc_control_type;
 ```
 
 </details>
